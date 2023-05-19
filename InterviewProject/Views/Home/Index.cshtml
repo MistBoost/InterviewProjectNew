@@ -1,0 +1,114 @@
+﻿@using System.Web;
+@using Microsoft.AspNetCore.Html;
+@model List<EmployeeTimeWorked>;
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+@{
+    <table class="table table-hover">
+        <tr>
+            <th>
+                EmployeeName
+            </th>
+            <th>
+                TimeWorked
+            </th>
+        </tr>
+
+        @foreach (var item in Model)
+        {
+            <tr>
+                @if (@item.TimeWorked < 100)
+                {
+                    <td style="background-color:red">
+                        @item.Name
+                    </td>
+                    <td style="background-color:red">
+                        @item.TimeWorked
+                    </td>
+                }
+                else
+                {
+                    <td>
+                        @item.Name
+                    </td>
+                    <td>
+                        @item.TimeWorked
+                    </td>
+                }
+            </tr>
+        }
+    </table>
+}
+
+<div>
+    <canvas class="myChart" id="myChart"></canvas>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+@{
+    var finalString = "";
+    foreach (var item in Model)
+    {
+        finalString = $"\'{item.Name}\'," + finalString;
+    }
+}
+
+@{
+    var finalString2 = "";
+    int sum = 0;
+    foreach (var item in Model)
+    {
+        sum += (int)item.TimeWorked;
+    }
+    foreach (var item in Model)
+    {
+        finalString2 += (int)(sum / item.TimeWorked) + ", ";
+    }
+}
+
+<script>
+    @{
+        var labels = @Html.Raw(finalString);
+    }
+    labels = "@Html.Raw(HttpUtility.JavaScriptStringEncode(finalString))";
+    const ctx = document.getElementById('myChart');
+    const data = {
+        labels: [@labels],
+        datasets: [{
+            label: 'Employees',
+            data: [@finalString2],
+            hoverOffset: 4
+        }]
+    };
+
+    new Chart(ctx, {
+        type: 'pie',
+        data: data
+    });
+</script>
+
+<center>
+    <button id="btn-download" onclick="downloadImage">Download</button>
+</center>
+
+<script>
+    document.getElementById('btn-download').addEventListener("click", function (e) {
+        var canvas = document.querySelector('#myChart');
+
+        var dataURL = canvas.toDataURL("image/png", 1.0);
+
+        downloadImage(dataURL, 'myChart.png');
+    });
+
+    // Save | Download image
+    function downloadImage(data, filename = 'myChart.png') {
+        var a = document.createElement('a');
+        a.href = data;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+    }
+</script>
